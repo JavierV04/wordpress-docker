@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_practica
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secreto_javier
+      MYSQL_DATABASE: db_lenguajes_javier
+      MYSQL_USER: javier_admin
+      MYSQL_PASSWORD: password_segura_javier
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - wp-network
+
+  wordpress:
+    image: wordpress:latest
+    container_name: wordpress_practica
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: javier_admin
+      WORDPRESS_DB_PASSWORD: password_segura_javier
+      WORDPRESS_DB_NAME: db_lenguajes_javier
+      WORDPRESS_DEBUG: 1
+    depends_on:
+      - db
+    volumes:
+      - wp_data:/var/www/html
+    networks:
+      - wp-network
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin_practica
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    depends_on:
+      - db
+    networks:
+      - wp-network
+
+  redis:
+    image: redis:alpine
+    container_name: wordpress-redis
+    restart: unless-stopped
+    networks:
+      - wp-network
+
+volumes:
+  db_data:
+  wp_data:
+
+networks:
+  wp-network:
+    driver: bridge
